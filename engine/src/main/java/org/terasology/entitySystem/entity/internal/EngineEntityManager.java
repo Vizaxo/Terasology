@@ -23,7 +23,7 @@ import org.terasology.persistence.typeHandling.TypeSerializationLibrary;
 
 /**
  */
-public interface EngineEntityManager extends LowLevelEntityManager, EngineEntityCache {
+public interface EngineEntityManager extends LowLevelEntityManager, EngineEntityPool {
 
     void setEntityRefStrategy(RefStrategy strategy);
 

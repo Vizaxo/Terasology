@@ -24,7 +24,7 @@ import java.util.Map;
 
 /**
  */
-public interface EntityManager extends EntityCache {
+public interface EntityManager extends EntityPool {
 
     /**
      * Creates a new EntityRef in sector-scope
@@ -73,7 +73,7 @@ public interface EntityManager extends EntityCache {
      */
     ComponentLibrary getComponentLibrary();
 
-    EntityCache getGlobalCache();
+    EntityPool getGlobalPool();
 
     SectorManager getSectorManager();
 

@@ -42,16 +42,16 @@ import static org.terasology.entitySystem.entity.internal.PojoEntityManager.NULL
 
 /**
  */
-public class PojoEntityCache implements EngineEntityCache {
+public class PojoEntityPool implements EngineEntityPool {
 
     private PojoEntityManager entityManager;
 
-    private static final Logger logger = LoggerFactory.getLogger(PojoEntityCache.class);
+    private static final Logger logger = LoggerFactory.getLogger(PojoEntityPool.class);
 
     private Map<Long, BaseEntityRef> entityStore = new MapMaker().weakValues().concurrencyLevel(4).initialCapacity(1000).makeMap();
     private ComponentTable componentStore = new ComponentTable();
 
-    public PojoEntityCache(PojoEntityManager entityManager) {
+    public PojoEntityPool(PojoEntityManager entityManager) {
         this.entityManager = entityManager;
     }
 
@@ -347,16 +347,16 @@ public class PojoEntityCache implements EngineEntityCache {
         }
         EntityRef existing = entityManager.getEntity(entityId);
         if (existing != null) {
-            //Entity exists, but is not in this cache
+            //Entity exists, but is not in this pool
             return existing;
         }
-        //Todo: look into whether RefStrategy should use manager or cache?
+        //Todo: look into whether RefStrategy should use manager or pool?
         BaseEntityRef newRef = entityManager.getEntityRefStrategy().createRefFor(entityId, entityManager);
 
         if (newRef.getComponent(EntityInfoComponent.class).scope == EntityData.Entity.Scope.SECTOR) {
-            entityManager.assignToCache(newRef, entityManager.getSectorManager());
+            entityManager.assignToPool(newRef, entityManager.getSectorManager());
         } else {
-            entityManager.assignToCache(newRef, entityManager);
+            entityManager.assignToPool(newRef, entityManager);
         }
 
         entityStore.put(entityId, newRef);

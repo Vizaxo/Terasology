@@ -19,5 +19,5 @@ import org.terasology.entitySystem.entity.SectorManager;
 
 /**
  */
-public interface EngineSectorManager extends SectorManager, EngineEntityCache {
+public interface EngineSectorManager extends SectorManager, EngineEntityPool {
 }

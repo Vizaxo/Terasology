@@ -18,9 +18,8 @@ package org.terasology.entitySystem.entity.internal;
 import com.google.common.collect.Iterables;
 import org.terasology.entitySystem.Component;
 import org.terasology.entitySystem.entity.EntityBuilder;
-import org.terasology.entitySystem.entity.EntityCache;
+import org.terasology.entitySystem.entity.EntityPool;
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.entitySystem.entity.SectorManager;
 import org.terasology.entitySystem.prefab.Prefab;
 import org.terasology.math.geom.Quat4f;
 import org.terasology.math.geom.Vector3f;
@@ -32,20 +31,20 @@ import java.util.List;
  */
 public class PojoSectorManager implements EngineSectorManager {
 
-    private List<EngineEntityCache> caches;
+    private List<EngineEntityPool> pools;
 
     private PojoEntityManager entityManager;
 
     public PojoSectorManager(PojoEntityManager entityManager) {
         this.entityManager = entityManager;
-        caches = new ArrayList<>();
-        caches.add(new PojoEntityCache(entityManager));
+        pools = new ArrayList<>();
+        pools.add(new PojoEntityPool(entityManager));
     }
 
     @Override
     public void clear() {
-        for (EntityCache cache : caches) {
-            cache.clear();
+        for (EntityPool pool : pools) {
+            pool.clear();
         }
     }
 
@@ -72,97 +71,97 @@ public class PojoSectorManager implements EngineSectorManager {
 
     @Override
     public EntityRef create() {
-        return getCache().create();
+        return getPool().create();
     }
 
     @Override
     public EntityRef create(Component... components) {
-        return getCache().create(components);
+        return getPool().create(components);
     }
 
     @Override
     public EntityRef create(Iterable<Component> components) {
-        return getCache().create(components);
+        return getPool().create(components);
     }
 
     @Override
     public EntityRef create(Iterable<Component> components, boolean sendLifecycleEvents) {
-        return getCache().create(components, sendLifecycleEvents);
+        return getPool().create(components, sendLifecycleEvents);
     }
 
     @Override
     public EntityRef create(String prefabName) {
-        return getCache().create(prefabName);
+        return getPool().create(prefabName);
     }
 
     @Override
     public EntityRef create(Prefab prefab) {
-        return getCache().create(prefab);
+        return getPool().create(prefab);
     }
 
     @Override
     public EntityRef create(String prefab, Vector3f position) {
-        return getCache().create(prefab, position);
+        return getPool().create(prefab, position);
     }
 
     @Override
     public EntityRef create(Prefab prefab, Vector3f position) {
-        return getCache().create(prefab, position);
+        return getPool().create(prefab, position);
     }
 
     @Override
     public EntityRef create(Prefab prefab, Vector3f position, Quat4f rotation) {
-        return getCache().create(prefab, position, rotation);
+        return getPool().create(prefab, position, rotation);
     }
 
     @Override
     public EntityRef createEntityWithoutLifecycleEvents(Iterable<Component> components) {
-        return getCache().createEntityWithoutLifecycleEvents(components);
+        return getPool().createEntityWithoutLifecycleEvents(components);
     }
 
     @Override
     public EntityRef createEntityWithoutLifecycleEvents(String prefab) {
-        return getCache().createEntityWithoutLifecycleEvents(prefab);
+        return getPool().createEntityWithoutLifecycleEvents(prefab);
     }
 
     @Override
     public EntityRef createEntityWithoutLifecycleEvents(Prefab prefab) {
-        return getCache().createEntityWithoutLifecycleEvents(prefab);
+        return getPool().createEntityWithoutLifecycleEvents(prefab);
     }
 
     @Override
     public void putEntity(long entityId, BaseEntityRef ref) {
-        getCache().putEntity(entityId, ref);
+        getPool().putEntity(entityId, ref);
     }
 
     @Override
     public ComponentTable getComponentStore() {
-        return getCache().getComponentStore();
+        return getPool().getComponentStore();
     }
 
     @Override
     public EntityRef createEntityWithId(long id, Iterable<Component> components) {
-        return getCache().createEntityWithId(id, components);
+        return getPool().createEntityWithId(id, components);
     }
 
     @Override
     public EntityRef createEntityRefWithId(long id) {
-        return getCache().createEntityRefWithId(id);
+        return getPool().createEntityRefWithId(id);
     }
 
     public void destroy(long entityId) {
-        getCache().destroy(entityId);
+        getPool().destroy(entityId);
     }
 
     public void destroyEntityWithoutEvents(EntityRef entity) {
-        getCache().destroyEntityWithoutEvents(entity);
+        getPool().destroyEntityWithoutEvents(entity);
     }
 
     @Override
     public Iterable<EntityRef> getAllEntities() {
         List<Iterable<EntityRef>> entityIterables = new ArrayList<>();
-        for (EntityCache cache : caches) {
-            entityIterables.add(cache.getAllEntities());
+        for (EntityPool pool : pools) {
+            entityIterables.add(pool.getAllEntities());
         }
 
         return Iterables.concat(entityIterables);
@@ -171,8 +170,8 @@ public class PojoSectorManager implements EngineSectorManager {
     @Override
     public Iterable<EntityRef> getEntitiesWith(Class<? extends Component>... componentClasses) {
         List<Iterable<EntityRef>> entityIterables = new ArrayList<>();
-        for (EntityCache cache : caches) {
-            entityIterables.add(cache.getEntitiesWith(componentClasses));
+        for (EntityPool pool : pools) {
+            entityIterables.add(pool.getEntitiesWith(componentClasses));
         }
 
         return Iterables.concat(entityIterables);
@@ -181,8 +180,8 @@ public class PojoSectorManager implements EngineSectorManager {
     @Override
     public int getCountOfEntitiesWith(Class<? extends Component>[] componentClasses) {
         int i = 0;
-        for (EngineEntityCache cache : caches) {
-            i += cache.getCountOfEntitiesWith(componentClasses);
+        for (EngineEntityPool pool : pools) {
+            i += pool.getCountOfEntitiesWith(componentClasses);
         }
         return i;
     }
@@ -190,8 +189,8 @@ public class PojoSectorManager implements EngineSectorManager {
     @Override
     public int getActiveEntityCount() {
         int count = 0;
-        for (EntityCache cache : caches) {
-            count += cache.getActiveEntityCount();
+        for (EntityPool pool : pools) {
+            count += pool.getActiveEntityCount();
         }
         return count;
     }
@@ -199,8 +198,8 @@ public class PojoSectorManager implements EngineSectorManager {
     @Override
     public EntityRef getExistingEntity(long id) {
         EntityRef entity;
-        for (EntityCache cache : caches) {
-            entity = cache.getExistingEntity(id);
+        for (EntityPool pool : pools) {
+            entity = pool.getExistingEntity(id);
             if (entity != EntityRef.NULL && entity != null) {
                 return entity;
             }
@@ -208,13 +207,13 @@ public class PojoSectorManager implements EngineSectorManager {
         return EntityRef.NULL;
     }
 
-    private EngineEntityCache getCache() {
-        return caches.get(0);
+    private EngineEntityPool getPool() {
+        return pools.get(0);
     }
 
     public boolean hasComponent(long entityId, Class<? extends Component> componentClass) {
-        for (EngineEntityCache cache : caches) {
-            if (cache.hasComponent(entityId, componentClass)) {
+        for (EngineEntityPool pool : pools) {
+            if (pool.hasComponent(entityId, componentClass)) {
                 return true;
             }
         }

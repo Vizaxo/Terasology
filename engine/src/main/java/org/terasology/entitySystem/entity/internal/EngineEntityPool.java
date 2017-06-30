@@ -16,13 +16,13 @@
 package org.terasology.entitySystem.entity.internal;
 
 import org.terasology.entitySystem.Component;
-import org.terasology.entitySystem.entity.EntityCache;
+import org.terasology.entitySystem.entity.EntityPool;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.prefab.Prefab;
 
 /**
  */
-public interface EngineEntityCache extends EntityCache {
+public interface EngineEntityPool extends EntityPool {
 
     /**
      * Creates an entity but doesn't send any lifecycle events.

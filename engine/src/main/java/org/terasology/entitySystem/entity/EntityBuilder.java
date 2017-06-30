@@ -37,19 +37,19 @@ public class EntityBuilder implements MutableComponentContainer {
     private static final Logger logger = LoggerFactory.getLogger(EntityBuilder.class);
 
     private Map<Class<? extends Component>, Component> components = Maps.newHashMap();
-    private EntityCache cache;
+    private EntityPool pool;
     private EngineEntityManager entityManager;
 
     private boolean sendLifecycleEvents = true;
 
     public EntityBuilder(EngineEntityManager entityManager) {
         this.entityManager = entityManager;
-        this.cache = entityManager.getGlobalCache();
+        this.pool = entityManager.getGlobalPool();
     }
 
-    public EntityBuilder(EngineEntityManager entityManager, EntityCache cache) {
+    public EntityBuilder(EngineEntityManager entityManager, EntityPool pool) {
         this.entityManager = entityManager;
-        this.cache = cache;
+        this.pool = pool;
     }
 
     /**
@@ -94,11 +94,11 @@ public class EntityBuilder implements MutableComponentContainer {
      * @return The built entity.
      */
     public EntityRef build() {
-        return cache.create(components.values(), sendLifecycleEvents);
+        return pool.create(components.values(), sendLifecycleEvents);
     }
 
     public EntityRef buildWithoutLifecycleEvents() {
-        return cache.create(components.values(), false);
+        return pool.create(components.values(), false);
     }
 
     @Override

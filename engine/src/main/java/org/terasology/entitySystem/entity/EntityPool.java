@@ -22,10 +22,10 @@ import org.terasology.math.geom.Vector3f;
 
 /**
  */
-public interface EntityCache {
+public interface EntityPool {
 
     /**
-     * Removes all entities from the cache.
+     * Removes all entities from the pool.
      */
     void clear();
 

@@ -16,7 +16,7 @@
 package org.terasology.entitySystem.entity.internal;
 
 import gnu.trove.iterator.TLongIterator;
-import org.terasology.entitySystem.entity.EntityCache;
+import org.terasology.entitySystem.entity.EntityPool;
 import org.terasology.entitySystem.entity.EntityRef;
 
 import java.util.Iterator;
@@ -26,11 +26,11 @@ import java.util.Iterator;
  */
 public class EntityIterator implements Iterator<EntityRef> {
     private TLongIterator idIterator;
-    private EntityCache cache;
+    private EntityPool pool;
 
-    EntityIterator(TLongIterator idIterator, EntityCache cache) {
+    EntityIterator(TLongIterator idIterator, EntityPool pool) {
         this.idIterator = idIterator;
-        this.cache = cache;
+        this.pool = pool;
     }
 
     @Override
@@ -40,7 +40,7 @@ public class EntityIterator implements Iterator<EntityRef> {
 
     @Override
     public EntityRef next() {
-        return cache.createEntityRefWithId(idIterator.next());
+        return pool.createEntityRefWithId(idIterator.next());
     }
 
     @Override

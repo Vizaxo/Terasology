@@ -132,7 +132,6 @@ public class PojoEntityManager implements EngineEntityManager {
     public EntityRef createSectorEntity() {
         EntityRef entity = sectorManager.create();
         entity.setScope(EntityData.Entity.Scope.SECTOR);
-        assignToPool(entity, sectorManager);
         return entity;
     }
 
@@ -143,12 +142,6 @@ public class PojoEntityManager implements EngineEntityManager {
         }
         loadedIds.add(nextEntityId);
         return nextEntityId++;
-    }
-
-    public long createEntity(EngineEntityPool pool) {
-        long id = createEntity();
-        poolMap.put(id, pool);
-        return id;
     }
 
     @Override
@@ -363,9 +356,9 @@ public class PojoEntityManager implements EngineEntityManager {
         for (Component c : components) {
             if (c instanceof EntityInfoComponent) {
                 if (((EntityInfoComponent) c).scope == EntityData.Entity.Scope.SECTOR) {
-                    assignToPool(id, sectorManager);
-                    EntityRef e = sectorManager.createEntityWithId(id, components);
-                    return e;
+                    return sectorManager.createEntityWithId(id, components);
+                } else {
+                    break;
                 }
             }
         }
@@ -467,7 +460,8 @@ public class PojoEntityManager implements EngineEntityManager {
     @Override
     //Todo: implement iterating over multiple pools
     public Iterable<Component> iterateComponents(long entityId) {
-        return globalPool.getComponentStore().iterateComponents(entityId);
+        return Iterables.concat(globalPool.getComponentStore().iterateComponents(entityId),
+                sectorManager.getComponentStore().iterateComponents(entityId));
     }
 
     @Override
@@ -607,12 +601,15 @@ public class PojoEntityManager implements EngineEntityManager {
      */
 
     protected void assignToPool(EntityRef ref, EngineEntityPool pool) {
-        //Todo: job for the sector manager?
-        poolMap.put(ref.getId(), pool);
+        if (poolMap.get(ref.getId()) != pool) {
+            poolMap.put(ref.getId(), pool);
+        }
     }
 
     protected void assignToPool(long entityId, EngineEntityPool pool) {
-        poolMap.put(entityId, pool);
+        if (poolMap.get(entityId) != pool) {
+            poolMap.put(entityId, pool);
+        }
     }
 
     private EntityRef createEntityRef(long entityId) {

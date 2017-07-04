@@ -145,8 +145,8 @@ public class PojoSectorManager implements EngineSectorManager {
     }
 
     @Override
-    public EntityRef createEntityRefWithId(long id) {
-        return getPool().createEntityRefWithId(id);
+    public EntityRef getEntityRef(long id) {
+        return getPool().getEntityRef(id);
     }
 
     public void destroy(long entityId) {

@@ -144,12 +144,12 @@ public interface EntityPool {
     EntityRef createEntityWithId(long id, Iterable<Component> components);
 
     /**
-     * Creates an entity ref with the given id. This is used when loading components with references.
+     * Retrieve the entity ref with the given id.
      *
      * @param id
      * @return The entityRef for the given id
      */
-    EntityRef createEntityRefWithId(long id);
+    EntityRef getEntityRef(long id);
 
     Iterable<EntityRef> getAllEntities();
 

@@ -293,8 +293,8 @@ public class PojoEntityManager implements EngineEntityManager {
 
 
     @Override
-    public EntityRef createEntityRefWithId(long entityId) {
-        return globalPool.createEntityRefWithId(entityId);
+    public EntityRef getEntityRef(long entityId) {
+        return globalPool.getEntityRef(entityId);
     }
 
     /**

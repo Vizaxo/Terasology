@@ -302,11 +302,7 @@ public class PojoEntityManager implements EngineEntityManager {
      */
     @Override
     public EntityRef createEntityWithoutLifecycleEvents(Iterable<Component> components) {
-        EntityRef entity = createEntity(components);
-        for (Component component: components) {
-            notifyComponentAdded(entity, component.getClass());
-        }
-        return entity;
+        return globalPool.createEntityWithoutLifecycleEvents(components);
     }
 
     /**
@@ -314,7 +310,7 @@ public class PojoEntityManager implements EngineEntityManager {
      */
     @Override
     public EntityRef createEntityWithoutLifecycleEvents(String prefabName) {
-        return createEntityWithoutLifecycleEvents(getPrefabManager().getPrefab(prefabName));
+        return globalPool.createEntityWithoutLifecycleEvents(prefabName);
     }
 
     /**
@@ -322,17 +318,7 @@ public class PojoEntityManager implements EngineEntityManager {
      */
     @Override
     public EntityRef createEntityWithoutLifecycleEvents(Prefab prefab) {
-        if (prefab != null) {
-            List<Component> components = Lists.newArrayList();
-            for (Component component : prefab.iterateComponents()) {
-                components.add(componentLibrary.copy(component));
-            }
-            components.add(new EntityInfoComponent(prefab, prefab.isPersisted(), prefab.isAlwaysRelevant()));
-
-            return createEntityWithoutLifecycleEvents(components);
-        } else {
-            return createEntityWithoutLifecycleEvents(Collections.<Component>emptyList());
-        }
+        return globalPool.createEntityWithoutLifecycleEvents(prefab);
     }
 
     @Override

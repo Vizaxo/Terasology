@@ -32,7 +32,6 @@ import org.terasology.entitySystem.entity.EntityBuilder;
 import org.terasology.entitySystem.entity.EntityPool;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.entity.lifecycleEvents.BeforeDeactivateComponent;
-import org.terasology.entitySystem.entity.lifecycleEvents.BeforeEntityCreated;
 import org.terasology.entitySystem.entity.lifecycleEvents.BeforeRemoveComponent;
 import org.terasology.entitySystem.entity.lifecycleEvents.OnActivatedComponent;
 import org.terasology.entitySystem.entity.lifecycleEvents.OnAddedComponent;
@@ -162,35 +161,6 @@ public class PojoEntityManager implements EngineEntityManager {
     @Override
     public void setEntityRefStrategy(RefStrategy strategy) {
         this.refStrategy = strategy;
-    }
-
-    private EntityRef createEntity(Iterable<Component> components) {
-        long entityId = createEntity();
-
-        Prefab prefab = null;
-        for (Component component : components) {
-            if (component instanceof EntityInfoComponent) {
-                EntityInfoComponent comp = (EntityInfoComponent) component;
-                prefab = comp.parentPrefab;
-                break;
-            }
-        }
-
-        Iterable<Component> finalComponents;
-        if (eventSystem != null) {
-            BeforeEntityCreated event = new BeforeEntityCreated(prefab, components);
-            BaseEntityRef tempRef = refStrategy.createRefFor(entityId, this);
-            eventSystem.send(tempRef, event);
-            tempRef.invalidate();
-            finalComponents = event.getResultComponents();
-        } else {
-            finalComponents = components;
-        }
-
-        for (Component c : finalComponents) {
-            globalPool.getComponentStore().put(entityId, c);
-        }
-        return createEntityRef(entityId);
     }
 
     @Override

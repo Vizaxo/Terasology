@@ -629,20 +629,6 @@ public class PojoEntityManager implements EngineEntityManager {
         }
     }
 
-    private class EntityIterable implements Iterable<EntityRef> {
-        private TLongList list;
-
-        EntityIterable(TLongList list) {
-            this.list = list;
-        }
-
-        @Override
-        public Iterator<EntityRef> iterator() {
-            return new EntityIterator(list.iterator(), globalPool);
-        }
-    }
-
-
     public boolean registerId(long entityId) {
         if (entityId >= nextEntityId) {
             logger.error("Prevented attempt to create entity with an invalid id.");

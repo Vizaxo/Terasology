@@ -462,7 +462,7 @@ public class PojoEntityManager implements EngineEntityManager {
             notifyComponentChanged(getEntity(entityId), component.getClass());
         }
         if (eventSystem != null) {
-            EntityRef entityRef = createEntityRef(entityId);
+            EntityRef entityRef = getEntity(entityId);
             if (oldComponent == null) {
                 eventSystem.send(entityRef, OnAddedComponent.newInstance(), component);
                 eventSystem.send(entityRef, OnActivatedComponent.newInstance(), component);
@@ -485,7 +485,7 @@ public class PojoEntityManager implements EngineEntityManager {
         T component = globalPool.getComponentStore().get(entityId, componentClass);
         if (component != null) {
             if (eventSystem != null) {
-                EntityRef entityRef = createEntityRef(entityId);
+                EntityRef entityRef = getEntity(entityId);
                 eventSystem.send(entityRef, BeforeDeactivateComponent.newInstance(), component);
                 eventSystem.send(entityRef, BeforeRemoveComponent.newInstance(), component);
             }
@@ -510,7 +510,7 @@ public class PojoEntityManager implements EngineEntityManager {
             logger.error("Saving a component ({}) that doesn't belong to this entity {}", component.getClass(), entityId);
         }
         if (eventSystem != null) {
-            EntityRef entityRef = createEntityRef(entityId);
+            EntityRef entityRef = getEntity(entityId);
             if (oldComponent == null) {
                 eventSystem.send(entityRef, OnAddedComponent.newInstance(), component);
                 eventSystem.send(entityRef, OnActivatedComponent.newInstance(), component);
@@ -544,22 +544,6 @@ public class PojoEntityManager implements EngineEntityManager {
         if (poolMap.get(entityId) != pool) {
             poolMap.put(entityId, pool);
         }
-    }
-
-    private EntityRef createEntityRef(long entityId) {
-        if (entityId == NULL_ID) {
-            return EntityRef.NULL;
-        }
-
-        //Return existing entity if it exists
-        EntityRef existing = getEntity(entityId);
-        if(existing != EntityRef.NULL && existing != null) {
-            return existing;
-        }
-
-        BaseEntityRef newRef = refStrategy.createRefFor(entityId, this);
-        globalPool.putEntity(entityId, newRef);
-        return newRef;
     }
 
     public void notifyComponentAdded(EntityRef changedEntity, Class<? extends Component> component) {
@@ -613,7 +597,7 @@ public class PojoEntityManager implements EngineEntityManager {
             List<Map.Entry<EntityRef, T>> list = new ArrayList<>();
             while (iterator.hasNext()) {
                 iterator.advance();
-                list.add(new EntityEntry<>(createEntityRef(iterator.key()), iterator.value()));
+                list.add(new EntityEntry<>(getEntity(iterator.key()), iterator.value()));
             }
             return list;
         }

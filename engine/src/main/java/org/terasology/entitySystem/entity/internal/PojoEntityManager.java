@@ -293,8 +293,12 @@ public class PojoEntityManager implements EngineEntityManager {
 
 
     @Override
-    public EntityRef getEntityRef(long entityId) {
-        return globalPool.getEntityRef(entityId);
+    public EntityRef getEntityRef(long id) {
+        if (idLoaded(id)) {
+            return getEntityPool(id).getEntityRef(id);
+        } else {
+            return EntityRef.NULL;
+        }
     }
 
     /**
@@ -389,7 +393,8 @@ public class PojoEntityManager implements EngineEntityManager {
             if (eventSystem != null) {
                 eventSystem.send(entity, BeforeDeactivateComponent.newInstance());
             }
-            List<Component> components = globalPool.getComponentStore().getComponentsInNewList(entityId);
+
+            List<Component> components = getEntityPool(entityId).getComponentStore().getComponentsInNewList(entityId);
             components = Collections.unmodifiableList(components);
             notifyBeforeDeactivation(entity, components);
             for (Component component: components) {
@@ -475,14 +480,7 @@ public class PojoEntityManager implements EngineEntityManager {
      */
     @Override
     public <T extends Component> T getComponent(long entityId, Class<T> componentClass) {
-        EngineEntityPool pool = poolMap.get(entityId);
-        //Default to the global pool
-        if (pool == null) {
-            //Todo: this happens a lot during shutdown. Possible concurrency issue?
-            //logger.error("Entity {} doesn't have an assigned pool", entityId);
-            pool = globalPool;
-        }
-        return pool.getComponentStore().get(entityId, componentClass);
+        return getEntityPool(entityId).getComponentStore().get(entityId, componentClass);
     }
 
     /**
@@ -497,12 +495,7 @@ public class PojoEntityManager implements EngineEntityManager {
     //Todo: be able to add to entities in any pool
     public <T extends Component> T addComponent(long entityId, T component) {
         Preconditions.checkNotNull(component);
-        EngineEntityPool pool = poolMap.get(entityId);
-        if (pool == null) {
-            logger.error("Entity {} doesn't have an assigned pool", entityId);
-            pool = globalPool;
-        }
-        Component oldComponent = pool.getComponentStore().put(entityId, component);
+        Component oldComponent = getEntityPool(entityId).getComponentStore().put(entityId, component);
 
         if (oldComponent != null) {
             logger.error("Adding a component ({}) over an existing component for entity {}", component.getClass(), entityId);
@@ -555,12 +548,7 @@ public class PojoEntityManager implements EngineEntityManager {
     @Override
     //Todo: be able to save components for entities in any pool
     public void saveComponent(long entityId, Component component) {
-        EngineEntityPool pool = poolMap.get(entityId);
-        if (pool == null) {
-            logger.error("Entity {} doesn't have an assigned pool", entityId);
-            pool = globalPool;
-        }
-        Component oldComponent = pool.getComponentStore().put(entityId, component);
+        Component oldComponent = getEntityPool(entityId).getComponentStore().put(entityId, component);
 
         if (oldComponent == null) {
             logger.error("Saving a component ({}) that doesn't belong to this entity {}", component.getClass(), entityId);
@@ -586,9 +574,13 @@ public class PojoEntityManager implements EngineEntityManager {
      * Implementation
      */
 
-    protected void assignToPool(EntityRef ref, EngineEntityPool pool) {
-        if (poolMap.get(ref.getId()) != pool) {
-            poolMap.put(ref.getId(), pool);
+    private EngineEntityPool getEntityPool(long id) {
+        EngineEntityPool pool = poolMap.get(id);
+        if (pool == null) {
+                logger.error("Entity {} doesn't have an assigned pool", id);
+                return globalPool;
+        } else {
+            return pool;
         }
     }
 

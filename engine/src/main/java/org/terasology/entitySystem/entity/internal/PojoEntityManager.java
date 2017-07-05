@@ -209,11 +209,6 @@ public class PojoEntityManager implements EngineEntityManager {
     }
 
     @Override
-    public EntityRef getEntity(long id) {
-        return createEntityRef(id);
-    }
-
-    @Override
     public EntityRef create(String prefab, Vector3f position) {
         return globalPool.create(prefab, position);
     }
@@ -293,9 +288,9 @@ public class PojoEntityManager implements EngineEntityManager {
 
 
     @Override
-    public EntityRef getEntityRef(long id) {
+    public EntityRef getEntity(long id) {
         if (idLoaded(id)) {
-            return getEntityPool(id).getEntityRef(id);
+            return getEntityPool(id).getEntity(id);
         } else {
             return EntityRef.NULL;
         }

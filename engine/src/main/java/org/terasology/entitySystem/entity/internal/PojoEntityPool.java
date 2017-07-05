@@ -175,7 +175,7 @@ public class PojoEntityPool implements EngineEntityPool {
         if (!entityManager.idLoaded(entityId)) {
             return;
         }
-        EntityRef ref = getEntityRef(entityId);
+        EntityRef ref = getEntity(entityId);
 
         EventSystem eventSystem = entityManager.getEventSystem();
         if (eventSystem != null) {
@@ -222,7 +222,7 @@ public class PojoEntityPool implements EngineEntityPool {
         for (Component c : finalComponents) {
             componentStore.put(entityId, c);
         }
-        return getEntityRef(entityId);
+        return getEntity(entityId);
     }
 
     /**
@@ -272,7 +272,7 @@ public class PojoEntityPool implements EngineEntityPool {
             componentStore.put(id, c);
         }
 
-        EntityRef entity = getEntityRef(id);
+        EntityRef entity = getEntity(id);
 
         EventSystem eventSystem = entityManager.getEventSystem();
         if (eventSystem != null) {
@@ -336,7 +336,7 @@ public class PojoEntityPool implements EngineEntityPool {
     }
 
     @Override
-    public EntityRef getEntityRef(long entityId) {
+    public EntityRef getEntity(long entityId) {
         if (entityId == NULL_ID || !entityManager.isExistingEntity(entityId)) {
             // ID is null or the entity doesn't exist
             return EntityRef.NULL;
@@ -362,7 +362,7 @@ public class PojoEntityPool implements EngineEntityPool {
                 //Keep entities which have all of the required components
                 .filter(id -> Arrays.stream(componentClasses)
                         .allMatch(component -> componentStore.get(id, component) != null))
-                .map(id -> getEntityRef(id))
+                .map(id -> getEntity(id))
                 .iterator();
     }
 

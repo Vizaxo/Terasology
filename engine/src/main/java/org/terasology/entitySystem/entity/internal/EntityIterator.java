@@ -40,7 +40,7 @@ public class EntityIterator implements Iterator<EntityRef> {
 
     @Override
     public EntityRef next() {
-        return pool.getEntityRef(idIterator.next());
+        return pool.getEntity(idIterator.next());
     }
 
     @Override

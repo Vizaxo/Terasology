@@ -149,7 +149,7 @@ public interface EntityPool {
      * @param id
      * @return The entityRef for the given id
      */
-    EntityRef getEntityRef(long id);
+    EntityRef getEntity(long id);
 
     Iterable<EntityRef> getAllEntities();
 

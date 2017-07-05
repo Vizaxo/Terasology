@@ -54,7 +54,7 @@ public interface EngineEntityManager extends LowLevelEntityManager, EngineEntity
      * @param id
      * @return The entityRef for the given id
      */
-    EntityRef getEntityRef(long id);
+    EntityRef getEntity(long id);
 
     /**
      * This is used to persist the entity manager's state

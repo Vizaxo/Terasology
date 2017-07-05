@@ -32,7 +32,6 @@ import org.terasology.entitySystem.prefab.Prefab;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.geom.Quat4f;
 import org.terasology.math.geom.Vector3f;
-import org.terasology.protobuf.EntityData;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -342,12 +341,13 @@ public class PojoEntityPool implements EngineEntityPool {
             return EntityRef.NULL;
         }
 
-        EntityRef existing = entityManager.getExistingEntity(entityId);
+        EntityRef existing = entityStore.get(entityId);
         if (existing != EntityRef.NULL && existing != null) {
-            //Entity already has a ref
+            // Entity already has a ref
             return existing;
         }
 
+        // Create a new ref
         BaseEntityRef entity = entityManager.getEntityRefStrategy().createRefFor(entityId, entityManager);
 
         entityStore.put(entityId, entity);
@@ -381,12 +381,6 @@ public class PojoEntityPool implements EngineEntityPool {
     @Override
     public int getActiveEntityCount() {
         return entityStore.size();
-    }
-
-    @Override
-    public EntityRef getExistingEntity(long id) {
-        EntityRef entity = entityStore.get(id);
-        return (entity == null) ? EntityRef.NULL : entity;
     }
 
     @Override

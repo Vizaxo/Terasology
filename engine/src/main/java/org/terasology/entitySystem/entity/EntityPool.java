@@ -147,7 +147,7 @@ public interface EntityPool {
      * Retrieve the entity ref with the given id.
      *
      * @param id
-     * @return The entityRef for the given id
+     * @return the {@link EntityRef}, if it exists; {@link EntityRef#NULL} otherwise
      */
     EntityRef getEntity(long id);
 
@@ -169,13 +169,5 @@ public interface EntityPool {
      * @return A count of currently active entities
      */
     int getActiveEntityCount();
-
-    /**
-     * Gets an entity, if it already exists.
-     *
-     * @param id the id of the desired entity
-     * @return the {@link EntityRef}, if it exists; {@link EntityRef#NULL} otherwise
-     */
-    EntityRef getExistingEntity(long id);
 
 }

@@ -258,15 +258,6 @@ public class PojoEntityManager implements EngineEntityManager {
     }
 
     @Override
-    public EntityRef getExistingEntity(long id) {
-        EntityRef entity = globalPool.getExistingEntity(id);
-        if (entity == EntityRef.NULL || entity == null) {
-            entity = sectorManager.getExistingEntity(id);
-        }
-        return (entity == null) ? EntityRef.NULL : entity;
-    }
-
-    @Override
     public ComponentLibrary getComponentLibrary() {
         return componentLibrary;
     }
@@ -591,7 +582,7 @@ public class PojoEntityManager implements EngineEntityManager {
         }
 
         //Return existing entity if it exists
-        EntityRef existing = getExistingEntity(entityId);
+        EntityRef existing = getEntity(entityId);
         if(existing != EntityRef.NULL && existing != null) {
             return existing;
         }

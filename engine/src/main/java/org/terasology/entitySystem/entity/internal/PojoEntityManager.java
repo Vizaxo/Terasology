@@ -49,6 +49,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 /**
@@ -248,11 +249,9 @@ public class PojoEntityManager implements EngineEntityManager {
 
     @Override
     public EntityRef getEntity(long id) {
-        if (idLoaded(id)) {
-            return getEntityPool(id).getEntity(id);
-        } else {
-            return EntityRef.NULL;
-        }
+        return getEntityPool(id)
+                .map(pool -> pool.getEntity(id))
+                .orElse(EntityRef.NULL);
     }
 
     /**
@@ -340,22 +339,26 @@ public class PojoEntityManager implements EngineEntityManager {
     }
 
     @Override
-    //Todo: include sector entities
     public void deactivateForStorage(EntityRef entity) {
-        if (entity.exists()) {
-            long entityId = entity.getId();
-            if (eventSystem != null) {
-                eventSystem.send(entity, BeforeDeactivateComponent.newInstance());
-            }
-
-            List<Component> components = getEntityPool(entityId).getComponentStore().getComponentsInNewList(entityId);
-            components = Collections.unmodifiableList(components);
-            notifyBeforeDeactivation(entity, components);
-            for (Component component: components) {
-                globalPool.getComponentStore().remove(entityId, component.getClass());
-            }
-            loadedIds.remove(entityId);
+        if (!entity.exists()) {
+            return;
         }
+
+        long entityId = entity.getId();
+        if (eventSystem != null) {
+            eventSystem.send(entity, BeforeDeactivateComponent.newInstance());
+        }
+
+        List<Component> components = Collections.unmodifiableList(
+                getEntityPool(entityId)
+                        .map(pool -> pool.getComponentStore().getComponentsInNewList(entityId))
+                        .orElse(Collections.emptyList()));
+
+        notifyBeforeDeactivation(entity, components);
+        for (Component component: components) {
+            getEntityPool(entityId).ifPresent(pool -> pool.getComponentStore().remove(entityId, component.getClass()));
+        }
+        loadedIds.remove(entityId);
     }
 
     @Override
@@ -404,12 +407,14 @@ public class PojoEntityManager implements EngineEntityManager {
      */
     @Override
     public Iterable<Component> iterateComponents(long entityId) {
-        return getEntityPool(entityId).getComponentStore().iterateComponents(entityId);
+        return getEntityPool(entityId)
+                .map(pool -> pool.getComponentStore().iterateComponents(entityId))
+                .orElse(Collections.emptyList());
     }
 
     @Override
     public void destroy(long entityId) {
-        getEntityPool(entityId).destroy(entityId);
+        getEntityPool(entityId).ifPresent(pool -> pool.destroy(entityId));
     }
 
     @Override
@@ -431,7 +436,9 @@ public class PojoEntityManager implements EngineEntityManager {
      */
     @Override
     public <T extends Component> T getComponent(long entityId, Class<T> componentClass) {
-        return getEntityPool(entityId).getComponentStore().get(entityId, componentClass);
+        return getEntityPool(entityId)
+                .map(pool -> pool.getComponentStore().get(entityId, componentClass))
+                .orElse(null);
     }
 
     /**
@@ -445,19 +452,17 @@ public class PojoEntityManager implements EngineEntityManager {
     @Override
     public <T extends Component> T addComponent(long entityId, T component) {
         Preconditions.checkNotNull(component);
-        Component oldComponent = getEntityPool(entityId).getComponentStore().put(entityId, component);
+        Optional<Component> oldComponent = getEntityPool(entityId).map(pool -> pool.getComponentStore().put(entityId, component));
 
-        if (oldComponent != null) {
-            logger.error("Adding a component ({}) over an existing component for entity {}", component.getClass(), entityId);
-        }
-        if (oldComponent == null) {
+        if (!oldComponent.isPresent()) {
             notifyComponentAdded(getEntity(entityId), component.getClass());
         } else {
+            logger.error("Adding a component ({}) over an existing component for entity {}", component.getClass(), entityId);
             notifyComponentChanged(getEntity(entityId), component.getClass());
         }
         if (eventSystem != null) {
             EntityRef entityRef = getEntity(entityId);
-            if (oldComponent == null) {
+            if (!oldComponent.isPresent()) {
                 eventSystem.send(entityRef, OnAddedComponent.newInstance(), component);
                 eventSystem.send(entityRef, OnActivatedComponent.newInstance(), component);
             } else {
@@ -475,17 +480,19 @@ public class PojoEntityManager implements EngineEntityManager {
      */
     @Override
     public <T extends Component> T removeComponent(long entityId, Class<T> componentClass) {
-        T component = getEntityPool(entityId).getComponentStore().get(entityId, componentClass);
-        if (component != null) {
+        Optional<ComponentTable> maybeStore = getEntityPool(entityId).map(EngineEntityPool::getComponentStore);
+        Optional<T> component = maybeStore.map(store -> store.get(entityId, componentClass));
+
+        if (component.isPresent()) {
             if (eventSystem != null) {
                 EntityRef entityRef = getEntity(entityId);
-                eventSystem.send(entityRef, BeforeDeactivateComponent.newInstance(), component);
-                eventSystem.send(entityRef, BeforeRemoveComponent.newInstance(), component);
+                eventSystem.send(entityRef, BeforeDeactivateComponent.newInstance(), component.get());
+                eventSystem.send(entityRef, BeforeRemoveComponent.newInstance(), component.get());
             }
             notifyComponentRemoved(getEntity(entityId), componentClass);
-            getEntityPool(entityId).getComponentStore().remove(entityId, componentClass);
+            maybeStore.ifPresent(store -> store.remove(entityId, componentClass));
         }
-        return component;
+        return component.orElse(null);
     }
 
     /**
@@ -496,21 +503,22 @@ public class PojoEntityManager implements EngineEntityManager {
      */
     @Override
     public void saveComponent(long entityId, Component component) {
-        Component oldComponent = getEntityPool(entityId).getComponentStore().put(entityId, component);
+        Optional<Component> oldComponent = getEntityPool(entityId)
+                .map(pool -> pool.getComponentStore().put(entityId, component));
 
-        if (oldComponent == null) {
+        if (!oldComponent.isPresent()) {
             logger.error("Saving a component ({}) that doesn't belong to this entity {}", component.getClass(), entityId);
         }
         if (eventSystem != null) {
             EntityRef entityRef = getEntity(entityId);
-            if (oldComponent == null) {
+            if (!oldComponent.isPresent()) {
                 eventSystem.send(entityRef, OnAddedComponent.newInstance(), component);
                 eventSystem.send(entityRef, OnActivatedComponent.newInstance(), component);
             } else {
                 eventSystem.send(entityRef, OnChangedComponent.newInstance(), component);
             }
         }
-        if (oldComponent == null) {
+        if (!oldComponent.isPresent()) {
             notifyComponentAdded(getEntity(entityId), component.getClass());
         } else {
             notifyComponentChanged(getEntity(entityId), component.getClass());
@@ -522,14 +530,24 @@ public class PojoEntityManager implements EngineEntityManager {
      * Implementation
      */
 
-    private EngineEntityPool getEntityPool(long id) {
-        EngineEntityPool pool = poolMap.get(id);
-        if (pool == null) {
+    /**
+     * Gets the entity pool associated with a given entity.
+     * <br>
+     * If the pool isn't assigned or the entity doesn't exist, an error is logged and the optional is returned empty
+     *
+     * @param id the id of the entity
+     * @return an {@link Optional} containing the pool if it exists, or empty
+     */
+    private Optional<EngineEntityPool> getEntityPool(long id) {
+        Optional<EngineEntityPool> pool = Optional.ofNullable(poolMap.get(id));
+        if (!pool.isPresent()) {
+            if (isExistingEntity(id)) {
                 logger.error("Entity {} doesn't have an assigned pool", id);
-                return globalPool;
-        } else {
-            return pool;
+            } else {
+                logger.error("Entity {} doesn't exist", id);
+            }
         }
+        return pool;
     }
 
     protected void assignToPool(long entityId, EngineEntityPool pool) {

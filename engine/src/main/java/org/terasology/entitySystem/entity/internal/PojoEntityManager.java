@@ -22,7 +22,6 @@ import com.google.common.collect.MapMaker;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import gnu.trove.iterator.TLongObjectIterator;
-import gnu.trove.list.TLongList;
 import gnu.trove.set.TLongSet;
 import gnu.trove.set.hash.TLongHashSet;
 import org.slf4j.Logger;
@@ -48,7 +47,6 @@ import org.terasology.protobuf.EntityData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -405,16 +403,13 @@ public class PojoEntityManager implements EngineEntityManager {
      * @return An iterable over the components of the given entity
      */
     @Override
-    //Todo: implement iterating over multiple pools
     public Iterable<Component> iterateComponents(long entityId) {
-        return Iterables.concat(globalPool.getComponentStore().iterateComponents(entityId),
-                sectorManager.getComponentStore().iterateComponents(entityId));
+        return getEntityPool(entityId).getComponentStore().iterateComponents(entityId);
     }
 
     @Override
-    //Todo: implement destroying in any pool
     public void destroy(long entityId) {
-        globalPool.destroy(entityId);
+        getEntityPool(entityId).destroy(entityId);
     }
 
     @Override
@@ -448,7 +443,6 @@ public class PojoEntityManager implements EngineEntityManager {
      * @return The added component
      */
     @Override
-    //Todo: be able to add to entities in any pool
     public <T extends Component> T addComponent(long entityId, T component) {
         Preconditions.checkNotNull(component);
         Component oldComponent = getEntityPool(entityId).getComponentStore().put(entityId, component);
@@ -480,9 +474,8 @@ public class PojoEntityManager implements EngineEntityManager {
      * @param componentClass
      */
     @Override
-    //Todo: be able to remove from entities in any pool
     public <T extends Component> T removeComponent(long entityId, Class<T> componentClass) {
-        T component = globalPool.getComponentStore().get(entityId, componentClass);
+        T component = getEntityPool(entityId).getComponentStore().get(entityId, componentClass);
         if (component != null) {
             if (eventSystem != null) {
                 EntityRef entityRef = getEntity(entityId);
@@ -490,7 +483,7 @@ public class PojoEntityManager implements EngineEntityManager {
                 eventSystem.send(entityRef, BeforeRemoveComponent.newInstance(), component);
             }
             notifyComponentRemoved(getEntity(entityId), componentClass);
-            globalPool.getComponentStore().remove(entityId, componentClass);
+            getEntityPool(entityId).getComponentStore().remove(entityId, componentClass);
         }
         return component;
     }
@@ -502,7 +495,6 @@ public class PojoEntityManager implements EngineEntityManager {
      * @param component
      */
     @Override
-    //Todo: be able to save components for entities in any pool
     public void saveComponent(long entityId, Component component) {
         Component oldComponent = getEntityPool(entityId).getComponentStore().put(entityId, component);
 
@@ -583,7 +575,6 @@ public class PojoEntityManager implements EngineEntityManager {
         }
     }
 
-    // For testing
     @Override
     @SafeVarargs
     public final int getCountOfEntitiesWith(Class<? extends Component>... componentClasses) {
@@ -629,7 +620,7 @@ public class PojoEntityManager implements EngineEntityManager {
         }
     }
 
-    public boolean registerId(long entityId) {
+    protected boolean registerId(long entityId) {
         if (entityId >= nextEntityId) {
             logger.error("Prevented attempt to create entity with an invalid id.");
             return false;
@@ -638,7 +629,7 @@ public class PojoEntityManager implements EngineEntityManager {
         return true;
     }
 
-    public boolean idLoaded(long entityId) {
+    protected boolean idLoaded(long entityId) {
         return loadedIds.contains(entityId);
     }
 

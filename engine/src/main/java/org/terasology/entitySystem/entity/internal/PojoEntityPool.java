@@ -189,7 +189,7 @@ public class PojoEntityPool implements EngineEntityPool {
         // Don't allow the destruction of unloaded entities.
         long entityId = ref.getId();
         entityStore.remove(entityId);
-        entityManager.remove(entityId);
+        entityManager.unregister(entityId);
         ref.invalidate();
         componentStore.remove(entityId);
     }

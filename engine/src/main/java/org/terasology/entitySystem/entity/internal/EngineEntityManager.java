@@ -105,8 +105,6 @@ public interface EngineEntityManager extends LowLevelEntityManager, EngineEntity
      */
     void unsubscribe(EntityChangeSubscriber subscriber);
 
-    void remove(long entityId);
-
     /**
      * Sets the event system the entity manager will use to propagate life cycle events.
      *

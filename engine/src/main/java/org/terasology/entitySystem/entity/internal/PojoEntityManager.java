@@ -701,12 +701,23 @@ public class PojoEntityManager implements EngineEntityManager {
         return loadedIds.contains(entityId);
     }
 
-    public void remove(long entityId) {
-        loadedIds.remove(entityId);
+    @Override
+    public void remove(long id) {
+        getPool(id).ifPresent(pool -> pool.remove(id));
     }
 
     @Override
     public boolean contains(long id) {
         return globalPool.contains(id) || sectorManager.contains(id);
     }
+
+    /**
+     * Remove this id from the entity manager's list of loaded ids.
+     *
+     * @param id the id to remove
+     */
+    protected void unregister(long id) {
+        loadedIds.remove(id);
+    }
+
 }

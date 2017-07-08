@@ -248,7 +248,7 @@ public class PojoEntityManager implements EngineEntityManager {
 
     @Override
     public EntityRef getEntity(long id) {
-        return getEntityPool(id)
+        return getPool(id)
                 .map(pool -> pool.getEntity(id))
                 .orElse(EntityRef.NULL);
     }
@@ -349,13 +349,13 @@ public class PojoEntityManager implements EngineEntityManager {
         }
 
         List<Component> components = Collections.unmodifiableList(
-                getEntityPool(entityId)
+                getPool(entityId)
                         .map(pool -> pool.getComponentStore().getComponentsInNewList(entityId))
                         .orElse(Collections.emptyList()));
 
         notifyBeforeDeactivation(entity, components);
         for (Component component: components) {
-            getEntityPool(entityId).ifPresent(pool -> pool.getComponentStore().remove(entityId, component.getClass()));
+            getPool(entityId).ifPresent(pool -> pool.getComponentStore().remove(entityId, component.getClass()));
         }
         loadedIds.remove(entityId);
     }
@@ -406,18 +406,18 @@ public class PojoEntityManager implements EngineEntityManager {
      */
     @Override
     public Iterable<Component> iterateComponents(long entityId) {
-        return getEntityPool(entityId)
+        return getPool(entityId)
                 .map(pool -> pool.getComponentStore().iterateComponents(entityId))
                 .orElse(Collections.emptyList());
     }
 
     @Override
     public void destroy(long entityId) {
-        getEntityPool(entityId).ifPresent(pool -> pool.destroy(entityId));
+        getPool(entityId).ifPresent(pool -> pool.destroy(entityId));
     }
 
     protected void notifyComponentRemovalAndEntityDestruction(long entityId, EntityRef ref) {
-        getEntityPool(entityId)
+        getPool(entityId)
                 .map(pool -> pool.getComponentStore().iterateComponents(entityId))
                 .orElse(Collections.emptyList())
                 .forEach(comp -> notifyComponentRemoved(ref, comp.getClass()));
@@ -435,7 +435,7 @@ public class PojoEntityManager implements EngineEntityManager {
      */
     @Override
     public <T extends Component> T getComponent(long entityId, Class<T> componentClass) {
-        return getEntityPool(entityId)
+        return getPool(entityId)
                 .map(pool -> pool.getComponentStore().get(entityId, componentClass))
                 .orElse(null);
     }
@@ -451,7 +451,7 @@ public class PojoEntityManager implements EngineEntityManager {
     @Override
     public <T extends Component> T addComponent(long entityId, T component) {
         Preconditions.checkNotNull(component);
-        Optional<Component> oldComponent = getEntityPool(entityId).map(pool -> pool.getComponentStore().put(entityId, component));
+        Optional<Component> oldComponent = getPool(entityId).map(pool -> pool.getComponentStore().put(entityId, component));
 
         if (!oldComponent.isPresent()) {
             notifyComponentAdded(getEntity(entityId), component.getClass());
@@ -479,7 +479,7 @@ public class PojoEntityManager implements EngineEntityManager {
      */
     @Override
     public <T extends Component> T removeComponent(long entityId, Class<T> componentClass) {
-        Optional<ComponentTable> maybeStore = getEntityPool(entityId).map(EngineEntityPool::getComponentStore);
+        Optional<ComponentTable> maybeStore = getPool(entityId).map(EngineEntityPool::getComponentStore);
         Optional<T> component = maybeStore.map(store -> store.get(entityId, componentClass));
 
         if (component.isPresent()) {
@@ -502,7 +502,7 @@ public class PojoEntityManager implements EngineEntityManager {
      */
     @Override
     public void saveComponent(long entityId, Component component) {
-        Optional<Component> oldComponent = getEntityPool(entityId)
+        Optional<Component> oldComponent = getPool(entityId)
                 .map(pool -> pool.getComponentStore().put(entityId, component));
 
         if (!oldComponent.isPresent()) {
@@ -537,7 +537,7 @@ public class PojoEntityManager implements EngineEntityManager {
      * @param id the id of the entity
      * @return an {@link Optional} containing the pool if it exists, or empty
      */
-    private Optional<EngineEntityPool> getEntityPool(long id) {
+    private Optional<EngineEntityPool> getPool(long id) {
         Optional<EngineEntityPool> pool = Optional.ofNullable(poolMap.get(id));
         if (!pool.isPresent()) {
             if (id != NULL_ID) {

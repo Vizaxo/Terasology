@@ -540,10 +540,12 @@ public class PojoEntityManager implements EngineEntityManager {
     private Optional<EngineEntityPool> getEntityPool(long id) {
         Optional<EngineEntityPool> pool = Optional.ofNullable(poolMap.get(id));
         if (!pool.isPresent()) {
-            if (isExistingEntity(id)) {
-                logger.error("Entity {} doesn't have an assigned pool", id);
-            } else {
-                logger.error("Entity {} doesn't exist", id);
+            if (id != NULL_ID) {
+                if (isExistingEntity(id)) {
+                    logger.error("Entity {} doesn't have an assigned pool", id);
+                } else if (id != NULL_ID) {
+                    logger.error("Entity {} doesn't exist", id);
+                }
             }
         }
         return pool;

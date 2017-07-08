@@ -637,16 +637,20 @@ public class PojoEntityManager implements EngineEntityManager {
     }
 
     public <T extends Component> Iterable<Map.Entry<EntityRef, T>> listComponents(Class<T> componentClass) {
-        TLongObjectIterator<T> iterator = globalPool.getComponentStore().componentIterator(componentClass);
-        if (iterator != null) {
-            List<Map.Entry<EntityRef, T>> list = new ArrayList<>();
-            while (iterator.hasNext()) {
-                iterator.advance();
-                list.add(new EntityEntry<>(getEntity(iterator.key()), iterator.value()));
+        List<TLongObjectIterator<T>> iterators = new ArrayList<>();
+        iterators.add(globalPool.getComponentStore().componentIterator(componentClass));
+        iterators.add(sectorManager.getComponentStore().componentIterator(componentClass));
+
+        List<Map.Entry<EntityRef, T>> list = new ArrayList<>();
+        for (TLongObjectIterator<T> iterator : iterators) {
+            if (iterator != null) {
+                while (iterator.hasNext()) {
+                    iterator.advance();
+                    list.add(new EntityEntry<>(getEntity(iterator.key()), iterator.value()));
+                }
             }
-            return list;
         }
-        return Collections.emptyList();
+        return list;
     }
 
     private static class EntityEntry<T> implements Map.Entry<EntityRef, T> {

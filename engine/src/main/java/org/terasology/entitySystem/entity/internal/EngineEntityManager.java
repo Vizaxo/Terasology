@@ -103,14 +103,6 @@ public interface EngineEntityManager extends LowLevelEntityManager, EngineEntity
      */
     void unsubscribe(EntityChangeSubscriber subscriber);
 
-    void notifyComponentAdded(EntityRef changedEntity, Class<? extends Component> component);
-
-    void notifyComponentRemoved(EntityRef changedEntity, Class<? extends Component> component);
-
-    void notifyComponentChanged(EntityRef changedEntity, Class<? extends Component> component);
-
-    void notifyComponentRemovalAndEntityDestruction(long entityId, EntityRef ref);
-
     long createEntity();
 
     void remove(long entityId);

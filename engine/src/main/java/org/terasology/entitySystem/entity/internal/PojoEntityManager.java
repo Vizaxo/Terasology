@@ -417,12 +417,12 @@ public class PojoEntityManager implements EngineEntityManager {
         getEntityPool(entityId).ifPresent(pool -> pool.destroy(entityId));
     }
 
-    @Override
-    //Todo: implement for any pool
-    public void notifyComponentRemovalAndEntityDestruction(long entityId, EntityRef ref) {
-        for (Component comp : globalPool.getComponentStore().iterateComponents(entityId)) {
-            notifyComponentRemoved(ref, comp.getClass());
-        }
+    protected void notifyComponentRemovalAndEntityDestruction(long entityId, EntityRef ref) {
+        getEntityPool(entityId)
+                .map(pool -> pool.getComponentStore().iterateComponents(entityId))
+                .orElse(Collections.emptyList())
+                .forEach(comp -> notifyComponentRemoved(ref, comp.getClass()));
+
         for (EntityDestroySubscriber destroySubscriber : destroySubscribers) {
             destroySubscriber.onEntityDestroyed(ref);
         }
@@ -556,19 +556,19 @@ public class PojoEntityManager implements EngineEntityManager {
         }
     }
 
-    public void notifyComponentAdded(EntityRef changedEntity, Class<? extends Component> component) {
+    protected void notifyComponentAdded(EntityRef changedEntity, Class<? extends Component> component) {
         for (EntityChangeSubscriber subscriber : subscribers) {
             subscriber.onEntityComponentAdded(changedEntity, component);
         }
     }
 
-    public void notifyComponentRemoved(EntityRef changedEntity, Class<? extends Component> component) {
+    protected void notifyComponentRemoved(EntityRef changedEntity, Class<? extends Component> component) {
         for (EntityChangeSubscriber subscriber : subscribers) {
             subscriber.onEntityComponentRemoved(changedEntity, component);
         }
     }
 
-    public void notifyComponentChanged(EntityRef changedEntity, Class<? extends Component> component) {
+    protected void notifyComponentChanged(EntityRef changedEntity, Class<? extends Component> component) {
         for (EntityChangeSubscriber subscriber : subscribers) {
             subscriber.onEntityComponentChange(changedEntity, component);
         }

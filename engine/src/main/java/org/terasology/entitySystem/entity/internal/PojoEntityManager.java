@@ -94,7 +94,7 @@ public class PojoEntityManager implements EngineEntityManager {
     }
 
     @Override
-    public EntityPool getGlobalPool() {
+    public EngineEntityPool getGlobalPool() {
         return globalPool;
     }
 
@@ -583,15 +583,17 @@ public class PojoEntityManager implements EngineEntityManager {
         } else {
             oldPool = maybePool.get();
         }
-        EntityRef ref = oldPool.getEntity(id);
-        Map<Class<? extends Component>, Component> savedComponents = copyComponents(ref);
+        Map<Class<? extends Component>, Component> savedComponents = copyComponents(oldPool.getEntity(id));
 
         //Remove from the existing pool
-        oldPool.remove(id);
+        Optional<BaseEntityRef> maybeRef = oldPool.remove(id);
+        if (!maybeRef.isPresent()) {
+            return false;
+        }
+        BaseEntityRef ref = maybeRef.get();
 
         //Create in new pool
-        //TODO: check if this sends too many events
-        pool.createEntityWithId(id, savedComponents.values());
+        pool.insertRef(ref, savedComponents.values());
 
         //TODO: send events?
 
@@ -694,8 +696,14 @@ public class PojoEntityManager implements EngineEntityManager {
     }
 
     @Override
-    public void remove(long id) {
-        getPool(id).ifPresent(pool -> pool.remove(id));
+    public Optional<BaseEntityRef> remove(long id) {
+        return getPool(id)
+                .flatMap(pool -> pool.remove(id));
+    }
+
+    @Override
+    public void insertRef(BaseEntityRef ref, Iterable<Component> components) {
+        globalPool.insertRef(ref, components);
     }
 
     @Override

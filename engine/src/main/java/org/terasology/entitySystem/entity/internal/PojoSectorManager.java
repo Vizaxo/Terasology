@@ -26,6 +26,7 @@ import org.terasology.math.geom.Vector3f;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 /**
  */
@@ -209,10 +210,18 @@ public class PojoSectorManager implements EngineSectorManager {
     }
 
     @Override
-    public void remove(long id) {
+    public Optional<BaseEntityRef> remove(long id) {
         if (contains(id)) {
-            entityManager.getPool(id).ifPresent(pool -> pool.remove(id));
+            return entityManager.getPool(id)
+                    .flatMap(pool -> pool.remove(id));
+        } else {
+            return Optional.empty();
         }
+    }
+
+    @Override
+    public void insertRef(BaseEntityRef ref, Iterable<Component> components) {
+        getPool().insertRef(ref, components);
     }
 
     @Override

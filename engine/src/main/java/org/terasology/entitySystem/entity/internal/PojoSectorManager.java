@@ -208,4 +208,16 @@ public class PojoSectorManager implements EngineSectorManager {
         return false;
     }
 
+    @Override
+    public void remove(long id) {
+        if (contains(id)) {
+            entityManager.getPool(id).ifPresent(pool -> pool.remove(id));
+        }
+    }
+
+    @Override
+    public boolean contains(long id) {
+        return pools.stream().anyMatch(pool -> pool.contains(id));
+    }
+
 }

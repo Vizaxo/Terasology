@@ -531,13 +531,13 @@ public class PojoEntityManager implements EngineEntityManager {
 
     /**
      * Gets the entity pool associated with a given entity.
-     * <br>
+     *
      * If the pool isn't assigned or the entity doesn't exist, an error is logged and the optional is returned empty
      *
      * @param id the id of the entity
      * @return an {@link Optional} containing the pool if it exists, or empty
      */
-    private Optional<EngineEntityPool> getPool(long id) {
+    public Optional<EngineEntityPool> getPool(long id) {
         Optional<EngineEntityPool> pool = Optional.ofNullable(poolMap.get(id));
         if (!pool.isPresent()) {
             if (id != NULL_ID) {
@@ -551,10 +551,59 @@ public class PojoEntityManager implements EngineEntityManager {
         return pool;
     }
 
+    /**
+     * Assign the given entity to the given pool.
+     *
+     * If the entity is already assigned to a pool, it will be re-assigned to the given pool.
+     * This does not actually move the entity or any of its components.
+     * If you want to move an entity to a different pool, {@link #moveToPool(long, EngineEntityPool)} should be used
+     * instead.
+     *
+     * @param entityId the id of the entity to assign
+     * @param pool the pool to assign the entity to
+     */
     protected void assignToPool(long entityId, EngineEntityPool pool) {
         if (poolMap.get(entityId) != pool) {
             poolMap.put(entityId, pool);
         }
+    }
+
+    /**
+     * Moves the given entity into the given pool. This will move the entity and all of its components, as well as
+     * re-assigning it in the entity manager.
+     *
+     * @param id the id of the entity to move
+     * @param pool the pool to move the entity into
+     * @return whether the move was successful
+     */
+    public boolean moveToPool(long id, EngineEntityPool pool) {
+
+        if (getPool(id).isPresent() && getPool(id).get().equals(pool)) {
+            //The entity is already in the correct pool
+            return true;
+        }
+
+        //Save the current entity and components
+        Optional<EngineEntityPool> maybePool = getPool(id);
+        EngineEntityPool oldPool;
+        if (!maybePool.isPresent()) {
+            return false;
+        } else {
+            oldPool = maybePool.get();
+        }
+        EntityRef ref = oldPool.getEntity(id);
+        Map<Class<? extends Component>, Component> savedComponents = copyComponents(ref);
+
+        //Remove from the existing pool
+        oldPool.remove(id);
+
+        //Create in new pool
+        //TODO: check if this sends too many events
+        pool.createEntityWithId(id, savedComponents.values());
+
+        //TODO: send events?
+
+        return true;
     }
 
     protected void notifyComponentAdded(EntityRef changedEntity, Class<? extends Component> component) {
@@ -656,4 +705,8 @@ public class PojoEntityManager implements EngineEntityManager {
         loadedIds.remove(entityId);
     }
 
+    @Override
+    public boolean contains(long id) {
+        return globalPool.contains(id) || sectorManager.contains(id);
+    }
 }

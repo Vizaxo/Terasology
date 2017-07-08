@@ -393,4 +393,19 @@ public class PojoEntityPool implements EngineEntityPool {
         return componentStore.get(entityId, componentClass) != null;
     }
 
+    public void remove(long id) {
+        entityStore.remove(id);
+        componentStore.remove(id);
+    }
+
+    /**
+     * Does this pool contain the given entity?
+     *
+     * @param id the identity to search for
+     * @return true if the pool contains the entity; false otherwise
+     */
+    public boolean contains(long id) {
+        return entityStore.containsKey(id);
+    }
+
 }

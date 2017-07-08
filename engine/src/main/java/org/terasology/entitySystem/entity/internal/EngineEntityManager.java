@@ -21,6 +21,8 @@ import org.terasology.entitySystem.entity.LowLevelEntityManager;
 import org.terasology.entitySystem.event.internal.EventSystem;
 import org.terasology.persistence.typeHandling.TypeSerializationLibrary;
 
+import java.util.Optional;
+
 /**
  */
 public interface EngineEntityManager extends LowLevelEntityManager, EngineEntityPool {
@@ -116,4 +118,6 @@ public interface EngineEntityManager extends LowLevelEntityManager, EngineEntity
      * @return The default serialization library to use for serializing components
      */
     TypeSerializationLibrary getTypeSerializerLibrary();
+
+    Optional<EngineEntityPool> getPool(long id);
 }

@@ -69,4 +69,6 @@ public interface EngineEntityPool extends EntityPool {
      * @return whether the entity has the component
      */
     boolean hasComponent(long entityId, Class<? extends Component> componentClass);
+
+    void remove(long id);
 }

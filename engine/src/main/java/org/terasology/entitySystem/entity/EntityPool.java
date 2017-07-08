@@ -170,4 +170,5 @@ public interface EntityPool {
      */
     int getActiveEntityCount();
 
+    boolean contains(long id);
 }

@@ -103,8 +103,6 @@ public interface EngineEntityManager extends LowLevelEntityManager, EngineEntity
      */
     void unsubscribe(EntityChangeSubscriber subscriber);
 
-    long createEntity();
-
     void remove(long entityId);
 
     /**

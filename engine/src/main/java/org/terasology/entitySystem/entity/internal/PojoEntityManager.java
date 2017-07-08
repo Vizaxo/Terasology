@@ -133,8 +133,7 @@ public class PojoEntityManager implements EngineEntityManager {
         return entity;
     }
 
-    @Override
-    public long createEntity() {
+    protected long createEntity() {
         if (nextEntityId == NULL_ID) {
             nextEntityId++;
         }

@@ -70,5 +70,11 @@ public interface EngineEntityPool extends EntityPool {
      */
     boolean hasComponent(long entityId, Class<? extends Component> componentClass);
 
+    /**
+     * Remove the entity from the pool. This does not destroy the entity, it only removes the {@link EntityRef}
+     * and the {@link Component}s from this pool, so that the entity can be moved to a different pool.
+     *
+     * @param id the id of the entity to remove
+     */
     void remove(long id);
 }

@@ -117,5 +117,13 @@ public interface EngineEntityManager extends LowLevelEntityManager, EngineEntity
      */
     TypeSerializationLibrary getTypeSerializerLibrary();
 
+    /**
+     * Gets the entity pool associated with a given entity.
+     *
+     * If the pool isn't assigned or the entity doesn't exist, an error is logged and the optional is returned empty
+     *
+     * @param id the id of the entity
+     * @return an {@link Optional} containing the pool if it exists, or empty
+     */
     Optional<EngineEntityPool> getPool(long id);
 }

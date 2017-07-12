@@ -535,7 +535,7 @@ public class PojoEntityManager implements EngineEntityManager {
             if (id != NULL_ID) {
                 if (isExistingEntity(id)) {
                     logger.error("Entity {} doesn't have an assigned pool", id);
-                } else if (id != NULL_ID) {
+                } else {
                     logger.error("Entity {} doesn't exist", id);
                 }
             }

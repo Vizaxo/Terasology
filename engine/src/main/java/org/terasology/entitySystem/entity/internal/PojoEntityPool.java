@@ -400,6 +400,7 @@ public class PojoEntityPool implements EngineEntityPool {
     @Override
     public Optional<BaseEntityRef> remove(long id) {
         componentStore.remove(id);
+        entityManager.unassignPool(id);
         return Optional.of(entityStore.remove(id));
     }
 

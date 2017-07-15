@@ -38,6 +38,7 @@ import org.terasology.testUtil.ModuleManagerFactory;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.mockito.Mockito.mock;
 
 /**
@@ -76,16 +77,19 @@ public class BaseEntityRefTest {
     public void testSetScope() {
         assertEquals(ref.getScope(), EntityData.Entity.Scope.GLOBAL);
         assertTrue(entityManager.getGlobalPool().contains(ref.getId()));
+        assertFalse(entityManager.getSectorManager().contains(ref.getId()));
 
         //Move into sector scope
         ref.setScope(EntityData.Entity.Scope.SECTOR);
         assertEquals(ref.getScope(), EntityData.Entity.Scope.SECTOR);
         assertTrue(entityManager.getSectorManager().contains(ref.getId()));
+        assertFalse(entityManager.getGlobalPool().contains(ref.getId()));
 
         //And move back to global scope
         ref.setScope(EntityData.Entity.Scope.GLOBAL);
         assertEquals(ref.getScope(), EntityData.Entity.Scope.GLOBAL);
         assertTrue(entityManager.getGlobalPool().contains(ref.getId()));
+        assertFalse(entityManager.getSectorManager().contains(ref.getId()));
     }
 
 }

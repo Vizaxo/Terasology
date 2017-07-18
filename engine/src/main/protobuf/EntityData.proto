@@ -48,6 +48,7 @@ message Entity {
     enum Scope {
         GLOBAL = 0;
         SECTOR = 1;
+        CHUNK = 2;
     }
 
     optional Scope scope = 7;

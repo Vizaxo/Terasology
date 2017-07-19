@@ -94,7 +94,8 @@ public class PojoEntityPool implements EngineEntityPool {
             }
         }
 
-        for (Component component: components) {
+        //Retrieve the components again in case they were modified by the previous events
+        for (Component component : entityManager.iterateComponents(entity.getId())) {
             entityManager.notifyComponentAdded(entity, component.getClass());
         }
 

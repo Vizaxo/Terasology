@@ -30,7 +30,7 @@ import org.terasology.module.sandbox.API;
 @API
 public class SectorSimulationComponent implements Component {
 
-    public static final float MAX_DELTA_DEFAULT = 10;
+    public static final float MAX_DELTA_DEFAULT = 1;
 
     /**
      * The maximum time that can elapse between {@link SectorSimulationEvent}s being sent. This value does not change
